@@ -10225,7 +10225,7 @@ GameObject:
   - component: {fileID: 1169345784}
   - component: {fileID: 1169345789}
   m_Layer: 0
-  m_Name: Capsule
+  m_Name: Player
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -10245,7 +10245,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   speed: 20
   turnSpeed: 45
-  pitchSpeed: 6000
+  pitchSpeed: 3000
 --- !u!136 &1169345785
 CapsuleCollider:
   m_ObjectHideFlags: 0
