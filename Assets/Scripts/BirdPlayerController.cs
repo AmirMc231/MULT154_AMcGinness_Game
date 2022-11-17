@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class BirdPlayerController : MonoBehaviour
 {
+    private Animator anim;
     public float speed = 20.0f;
     private float flightSpeed;
     private float speedMult = 200.0f;
@@ -33,6 +34,7 @@ public class BirdPlayerController : MonoBehaviour
         Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Locked;
         flightSpeed = speed;
+        anim = gameObject.GetComponentInChildren<Animator>();
     }
 
     // Update is called once per frame
@@ -87,13 +89,20 @@ public class BirdPlayerController : MonoBehaviour
         if (horizontalInput > 0)
         {
             horzRotation = horzRotation + turnSpeed * Time.deltaTime;
+            anim.SetBool("TurnRight", true);
         }
         else if (horizontalInput < 0)
         {
             horzRotation = horzRotation - turnSpeed * Time.deltaTime;
+            anim.SetBool("TurnLeft", true);
+        }
+        else
+        {
+            anim.SetBool("TurnRight", false);
+            anim.SetBool("TurnLeft", false);
         }
 
-        transform.rotation = Quaternion.Euler(pitchSpeed * forwardInput, horzRotation, 0);
+        transform.rotation = Quaternion.Euler(pitchSpeed * forwardInput, horzRotation, horizontalInput * -30.0f);
 
         if(forwardInput < -0.5f)
         {
