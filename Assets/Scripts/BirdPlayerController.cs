@@ -5,8 +5,10 @@ using UnityEngine;
 public class BirdPlayerController : MonoBehaviour
 {
     public float speed = 20.0f;
+    private float flightSpeed;
+    private float speedMult = 200.0f;
     public float turnSpeed = 45.0f;
-    public float pitchSpeed = 60.0f;
+    private float pitchSpeed = 45.0f;
     //private float pitchReverse = 300.0f;
     public float pitchCap = 30.0f;
     public float gravityModifier;
@@ -14,11 +16,14 @@ public class BirdPlayerController : MonoBehaviour
 
     private float horizontalInput;
     private float forwardInput;
-    
-    Vector3 velocity;
+    private float horzRotation;
+    private float vertRotation;
+
     public float wingsLift = 30;
+    public float knockback = 20;
     private bool wingsTired = false;
     private bool tired = false;
+    private bool notLevel;
 
     // Start is called before the first frame update
     void Start()
@@ -27,6 +32,7 @@ public class BirdPlayerController : MonoBehaviour
         Physics.gravity *= gravityModifier; 
         Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Locked;
+        flightSpeed = speed;
     }
 
     // Update is called once per frame
@@ -35,39 +41,25 @@ public class BirdPlayerController : MonoBehaviour
         horizontalInput = Input.GetAxis("Horizontal");
         forwardInput = Input.GetAxis("Vertical");
         
-        //downInput = Input.GetKeyDown(KeyCode.LeftControl);
-        
-        transform.Translate(Vector3.forward * Time.deltaTime * speed);
+        transform.Translate(Vector3.forward * Time.deltaTime * flightSpeed);
 
-        if (Input.GetKey(KeyCode.LeftShift) && !tired)
-        {
-            speed = 40.0f;
-            StartCoroutine(SpeedBoost());
-            StartCoroutine(Tired());
-        }
-
-        //transform.localRotation = Quaternion.Euler(pitchSpeed * forwardInput, turnSpeed * horizontalInput, 0);
-        transform.Rotate(Vector3.up, turnSpeed * horizontalInput * Time.deltaTime);
-        //transform.Rotate(Vector3.right, pitchSpeed * forwardInput * Time.deltaTime);
-
-        //if(transform.rotation.x > 30)
-        //{
-        //    transform.rotation = new Vector3(30f, transform.rotation.y);
-        //}
-        
-        
-        
-        //if (transform.rotation.x < 0 && forwardInput == 0)
-        //{
-        //    transform.Rotate(Vector3.right, pitchReverse * Time.deltaTime);
-        //}
-        //else if (transform.rotation.x > 0 && forwardInput == 0)
-        //{
-        //    transform.Rotate(Vector3.right, -pitchReverse * Time.deltaTime);
-        //}
+        shiftBoost();
+        turning();
         wingAction();
     }
 
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (collision.collider.CompareTag("Ground"))
+        {
+            rbplayer.AddForce(Vector3.up * knockback, ForceMode.Impulse);
+        }
+        else if(collision.collider.CompareTag("Edge"))
+        {
+            rbplayer.AddForce(Vector3.forward * -knockback * 5, ForceMode.Impulse);
+            StartCoroutine(EdgeKnock());
+        }
+    }
     private void wingAction()
     {
         bool spaceInput = Input.GetKeyDown(KeyCode.Space);
@@ -75,28 +67,79 @@ public class BirdPlayerController : MonoBehaviour
         if (spaceInput && !wingsTired) //&& forwardInput == 0)
         {
             rbplayer.AddForce(Vector2.up * wingsLift, ForceMode.Impulse);
-            //velocity.y = Mathf.Sqrt(wingsLift * -2f * gravityModifier);
             wingsTired = true;
             StartCoroutine(WingCD());
         }
 
         //velocity.y += gravityModifier * Time.deltaTime;
     }
+    private void shiftBoost()
+    {
+        if (Input.GetKey(KeyCode.LeftShift) && !tired)
+        {
+            flightSpeed = speed * 2; //+ speedMult * Time.deltaTime;
+            StartCoroutine(SpeedBoost());
+            StartCoroutine(Tired());
+        }
+    }
+    private void turning()
+    {
+        if (horizontalInput > 0)
+        {
+            horzRotation = horzRotation + turnSpeed * Time.deltaTime;
+        }
+        else if (horizontalInput < 0)
+        {
+            horzRotation = horzRotation - turnSpeed * Time.deltaTime;
+        }
 
+        transform.rotation = Quaternion.Euler(pitchSpeed * forwardInput, horzRotation, 0);
+
+        if(forwardInput < -0.5f)
+        {
+            //flightSpeed = speed * 0.5f;
+            transform.Translate(Vector3.forward * Time.deltaTime * (flightSpeed - flightSpeed / 2));
+
+        }
+        else if(forwardInput > 0.5f)
+        {
+            //flightSpeed = speed * 1.5f;
+            transform.Translate(Vector3.forward * Time.deltaTime * (flightSpeed + flightSpeed / 2));
+        }
+        else
+        {
+            transform.Translate(Vector3.forward * Time.deltaTime * flightSpeed);
+        }
+
+        
+    }
+    
+    IEnumerator EdgeKnock()
+    {
+        flightSpeed = 0;
+        yield return new WaitForSeconds(2f);
+        flightSpeed = speed;
+    }
     IEnumerator WingCD()
     {
-        yield return new WaitForSeconds(1);
+        yield return new WaitForSeconds(1f);
         wingsTired = false;
     }
     IEnumerator SpeedBoost()
     {
         yield return new WaitForSeconds(1.5f);
-        speed = 20.0f;
+        flightSpeed = speed;
         tired = true;
     }
     IEnumerator Tired()
     {
         yield return new WaitForSeconds(3f);
         tired = false;
+    }
+
+    IEnumerator FlightEven()
+    {
+        yield return new WaitForSeconds(1f);
+        flightSpeed = speed;
     }
 }
