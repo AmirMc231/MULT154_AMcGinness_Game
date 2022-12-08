@@ -68,6 +68,7 @@ public class BirdPlayerController : MonoBehaviour
 
         if (spaceInput && !wingsTired) //&& forwardInput == 0)
         {
+            anim.SetBool("WingLift", true);
             rbplayer.AddForce(Vector2.up * wingsLift, ForceMode.Impulse);
             wingsTired = true;
             StartCoroutine(WingCD());
@@ -79,6 +80,7 @@ public class BirdPlayerController : MonoBehaviour
     {
         if (Input.GetKey(KeyCode.LeftShift) && !tired)
         {
+            anim.SetBool("Fast", true);
             flightSpeed = speed * 2; //+ speedMult * Time.deltaTime;
             StartCoroutine(SpeedBoost());
             StartCoroutine(Tired());
@@ -133,12 +135,15 @@ public class BirdPlayerController : MonoBehaviour
     {
         yield return new WaitForSeconds(1f);
         wingsTired = false;
+        anim.SetBool("WingLift", false);
     }
     IEnumerator SpeedBoost()
     {
+        
         yield return new WaitForSeconds(1.5f);
         flightSpeed = speed;
         tired = true;
+        anim.SetBool("Fast", false);
     }
     IEnumerator Tired()
     {
