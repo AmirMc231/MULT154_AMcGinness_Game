@@ -23,13 +23,13 @@ public class TurretEnemy : MonoBehaviour
     {
         
         PlayerDir = GameObject.Find("Player").transform;
-
+        InvokeRepeating("ShootGun", 1.0f, 0f);
     }
 
     // Update is called once per frame
     void Update()
     {
-        //head.LookAt(PlayerDir);
+        
         TurretPointer();
     }
 
@@ -42,6 +42,11 @@ public class TurretEnemy : MonoBehaviour
             head.LookAt(PlayerDir);
             
         }
+    }
+
+    void ShootGun()
+    {
+        Instantiate();
     }
 
     
