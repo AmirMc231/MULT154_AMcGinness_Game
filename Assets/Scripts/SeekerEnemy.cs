@@ -13,10 +13,6 @@ public class SeekerEnemy : MonoBehaviour
     //public float nextFire;
 
 
-
-
-
-
     // Start is called before the first frame update
     void Start()
     {
@@ -40,6 +36,14 @@ public class SeekerEnemy : MonoBehaviour
         {
             head.LookAt(PlayerDir);
 
+        }
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("PlayerProjectile"))
+        {
+            Destroy(gameObject);
         }
     }
 }

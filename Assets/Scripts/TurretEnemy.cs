@@ -23,7 +23,7 @@ public class TurretEnemy : MonoBehaviour
     {
         
         PlayerDir = GameObject.Find("Player").transform;
-        InvokeRepeating("ShootGun", 1.0f, 0f);
+        InvokeRepeating("ShootGun", 1.0f, 1f);
     }
 
     // Update is called once per frame
@@ -46,7 +46,15 @@ public class TurretEnemy : MonoBehaviour
 
     void ShootGun()
     {
-        Instantiate();
+        Instantiate(bullet, gun.position, gun.transform.rotation);
+
+    }
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("PlayerProjectile"))
+        {
+            Destroy(gameObject);
+        }
     }
 
     

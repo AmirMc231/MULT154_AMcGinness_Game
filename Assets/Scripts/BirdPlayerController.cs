@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
+using UnityEngine.UI;
 
 public class BirdPlayerController : MonoBehaviour
 {
@@ -14,6 +16,20 @@ public class BirdPlayerController : MonoBehaviour
     public float pitchCap = 30.0f;
     public float gravityModifier;
     private Rigidbody rbplayer;
+    public GameObject playerBullet;
+    public Transform gun;
+    public int time;
+    private int shotsFired;
+    private int bestShots;
+    public int health = 10;
+    public GameObject altCamera;
+
+
+    public TextMeshProUGUI uitShots;
+    public TextMeshProUGUI uitBestShots;
+    public TextMeshProUGUI uitHealth;
+    public TextMeshProUGUI uitGameOver;
+    public Button restartButton;
 
     private float horizontalInput;
     private float forwardInput;
@@ -22,6 +38,7 @@ public class BirdPlayerController : MonoBehaviour
 
     public float wingsLift = 30;
     public float knockback = 20;
+    public float bulletSpeed = 200;
     private bool wingsTired = false;
     private bool tired = false;
     private bool notLevel;
@@ -33,8 +50,21 @@ public class BirdPlayerController : MonoBehaviour
         Physics.gravity *= gravityModifier; 
         Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Locked;
+        uitGameOver.gameObject.SetActive(false);
+        restartButton.gameObject.SetActive(false);
+        altCamera.gameObject.SetActive(false);
         flightSpeed = speed;
         anim = gameObject.GetComponentInChildren<Animator>();
+        //health = 10;
+        if (PlayerPrefs.HasKey("UIText_BestShots"))
+        {
+            bestShots = PlayerPrefs.GetInt("UIText_BestShots");
+        }
+        else
+        {
+            bestShots = 200;
+            PlayerPrefs.SetInt("UIText_BestShots", 200);
+        }
     }
 
     // Update is called once per frame
@@ -48,6 +78,35 @@ public class BirdPlayerController : MonoBehaviour
         shiftBoost();
         turning();
         wingAction();
+
+        bool fireDown = Input.GetKeyDown(KeyCode.Mouse0);
+        if (fireDown)
+        {
+            //Debug.Log("MouseClick");
+            GameObject clone = Instantiate(playerBullet, gun.transform.position, gun.transform.rotation);
+            shotsFired++;
+            //clone.GetComponent<Rigidbody>().AddForce(gun.forward * bulletSpeed);
+            //Destroy(clone, 10);
+        }
+        if (shotsFired < bestShots)
+        {
+            //bestScore = shotsTaken;
+            PlayerPrefs.SetInt("UIText_BestShots", shotsFired);
+            uitBestShots.text = "Least Shots Fired: " + shotsFired;
+        }
+        if (health == 0)
+        {
+            
+            Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.None;
+            altCamera.gameObject.SetActive(true);
+            Destroy(gameObject);
+            uitGameOver.gameObject.SetActive(true);
+            restartButton.gameObject.SetActive(true);
+        }
+        uitShots.text = "Scream Number: " + shotsFired;
+        uitBestShots.text = "Least Screams: " + bestShots;
+        uitHealth.text = "Health: " + health;
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -60,6 +119,11 @@ public class BirdPlayerController : MonoBehaviour
         {
             rbplayer.AddForce(Vector3.forward * -knockback * 5, ForceMode.Impulse);
             StartCoroutine(EdgeKnock());
+        }
+        else if (collision.collider.CompareTag("EnemyProjectile"))
+        {
+            health--;
+            Destroy(collision.gameObject);
         }
     }
     private void wingAction()
